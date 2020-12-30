@@ -1,0 +1,45 @@
+# pull official base image
+FROM node:15.4-alpine
+
+# update and upgrade alpine packages
+RUN apk update && apk upgrade
+
+# install python3
+RUN apk add --no-cache python3 \
+    && ln -s /usr/bin/python3 /bin/python \
+    && ln -s /usr/bin/pip3 /bin/pip \
+    && python -m ensurepip \
+    && pip install --upgrade pip
+
+# set working directory
+WORKDIR /app
+
+# set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV DEBUG=0
+
+# copy project
+COPY . .
+
+# install python dependencies
+RUN pip install -r requirements.txt
+
+
+# install node packages
+RUN npm install
+
+# compile css
+RUN npm run build:css
+
+# prep the server
+RUN python manage.py collectstatic --no-input \
+    && python manage.py makemigrations --no-input \
+    && python manage.py migrate --no-input
+
+# add a new user to the alpine instance and set as the current user
+RUN adduser -D myuser
+USER myuser
+
+# run the server using gunicorn
+CMD gunicorn app.wsgi:application --bind 0.0.0.0:$PORT
