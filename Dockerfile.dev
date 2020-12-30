@@ -1,0 +1,42 @@
+# pull official base image
+FROM node:15.4-alpine
+
+# set working directory
+WORKDIR /app
+
+# set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV DEBUG=1
+
+# install python3
+RUN apk update \
+    && apk add --no-cache python3 \
+    && python3 -m ensurepip \
+    && pip3 install --no-cache --upgrade pip
+
+# copy project
+COPY . .
+
+# install python dependencies
+RUN pip3 install -r requirements.txt
+
+
+# install node packages
+RUN npm install
+
+# compile css
+RUN npm run build:css
+
+# prep the server
+RUN python3 manage.py collectstatic --no-input \
+    && python3 manage.py makemigrations --no-input \
+    && python3 manage.py migrate --no-input
+
+# add a new user to the alpine instance and set as the current user
+RUN adduser -D myuser
+USER myuser
+
+# run the server using the built in Django server for dev
+# CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD gunicorn app.wsgi:application --bind 0.0.0.0:8000
