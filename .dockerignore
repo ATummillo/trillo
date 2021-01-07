@@ -3,6 +3,7 @@
 env
 node_modules
 assets/css/style.**
+.git
 .gitignore
 db.sqlite3
 LICENSE
