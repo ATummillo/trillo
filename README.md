@@ -1,6 +1,6 @@
 # Trillo
 
-![Image](https://drive.google.com/uc?export=view&id=1Il6ScELvC2FKhNTrkoXc05LD8o2OOGy5)
+![Image](./assets/img/trillo_README.png)
 
 > This project focusses on CSS Flexbox, as well as advanced CSS concepts like pseudo-classes and pseudo-elements. 
 
